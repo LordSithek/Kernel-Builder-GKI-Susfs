@@ -47,36 +47,36 @@ if [ -f "common/fs/proc/base.c.rej" ]; then
   fi
 fi
 
-
 # 3. Fix fs/namespace.c
 if [ -f "common/fs/namespace.c.rej" ]; then
   echo ">>> Found namespace.c.rej. Applying manual fix..."
-  
-  # Inject the headers before pnode.h
-  sed -i '/#include "pnode.h"/i\
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\
-#include <linux/susfs_def.h>\
-#endif \/\/ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\
-' common/fs/namespace.c
+  NS=common/fs/namespace.c
 
-  # Inject the externs and macros after trace/hooks/blk.h
-  sed -i '/#include <trace\/hooks\/blk.h>/a\
-\
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\
-extern bool susfs_is_current_ksu_domain(void);\
-extern struct static_key_true susfs_is_sdcard_android_data_not_decrypted;\
-\
-#define CL_COPY_MNT_NS BIT(25) \/* used by copy_mnt_ns() *\/\
-\
-#endif \/\/ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT\
-' common/fs/namespace.c
+  if ! grep -q 'linux/susfs_def.h' "$NS"; then
+    sed -i '/#include "pnode.h"/i #include <linux/susfs_def.h>' "$NS"
+  fi
 
-  # Sanity Check: Did the injection actually write to the file?
-  if grep -q 'susfs_is_sdcard_android_data_not_decrypted' common/fs/namespace.c; then
+  if ! grep -q '^#define CL_COPY_MNT_NS ' "$NS"; then
+    cat > /tmp/susfs_ns_inject.txt <<'EOF'
+
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+extern bool susfs_is_current_ksu_domain(void);
+extern struct static_key_true susfs_is_sdcard_android_data_not_decrypted;
+
+#define CL_COPY_MNT_NS BIT(25) /* used by copy_mnt_ns() */
+#endif
+EOF
+    sed -i '/#include "pnode.h"/r /tmp/susfs_ns_inject.txt' "$NS"
+  fi
+
+  if grep -q '^extern struct static_key_true susfs_is_sdcard_android_data_not_decrypted' "$NS" \
+     && grep -q '^extern bool susfs_is_current_ksu_domain' "$NS" \
+     && grep -q '^#define CL_COPY_MNT_NS ' "$NS"; then
     echo "  -> namespace.c fix verified!"
-    rm "common/fs/namespace.c.rej"
+    rm -f common/fs/namespace.c.rej
   else
-    echo "  [-] WARNING: namespace.c fix failed to inject! The anchor line may have changed." >&2
+    echo "  [-] namespace.c fix FAILED: declarations missing" >&2
+    exit 1
   fi
 fi
 
