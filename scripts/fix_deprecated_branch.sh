@@ -4,12 +4,12 @@ set -euo pipefail
 C="${MANIFEST_BRANCH#common-}"
 COMMON_URL="https://android.googlesource.com/kernel/common"
 
-if git ls-remote --exit-code --heads "$COMMON_URL" "$C" >/dev/null 2>&1; then
+if git ls-remote --exit-code "$COMMON_URL" "refs/heads/$C" >/dev/null 2>&1; then
 echo ">>> $C exists upstream. No override needed."
 exit 0
 fi
 
-if ! git ls-remote --exit-code --heads "$COMMON_URL" "deprecated/$C" >/dev/null 2>&1; then
+if ! git ls-remote --exit-code "$COMMON_URL" "refs/heads/deprecated/$C" >/dev/null 2>&1; then
 echo "[-] Neither $C nor deprecated/$C exists upstream."
 exit 1
 fi
