@@ -1,4 +1,5 @@
-name: Universal GKI Kernel Builder CI
+
+: Universal GKI Kernel Builder CI
 run-name: "Build Custom GKI: ${{ inputs.build_name }} [${{ github.ref_name }}]"
 on:
   workflow_dispatch:
@@ -243,7 +244,21 @@ jobs:
           set -euo pipefail
           rm -rf kernel_workspace && mkdir -p kernel_workspace && cd kernel_workspace
           repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH" --depth=1
-          
+C="${MANIFEST_BRANCH#common-}"
+COMMON_URL="https://android.googlesource.com/kernel/common"
+if ! git ls-remote --exit-code --heads "$COMMON_URL" "$C" >/dev/null 2>&1 \
+   && git ls-remote --exit-code --heads "$COMMON_URL" "deprecated/$C" >/dev/null 2>&1; then
+  echo ">>> $C moved to deprecated/ upstream. Overriding kernel/common revision..."
+  mkdir -p .repo/local_manifests
+  cat > .repo/local_manifests/deprecated_fix.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remove-project name="kernel/common" />
+  <project path="common" name="kernel/common" remote="aosp" revision="refs/heads/deprecated/${C}" />
+</manifest>
+EOF
+fi
+
           MAX_RETRIES=3
           for i in $(seq 1 $MAX_RETRIES); do
             echo ">>> Running repo sync (Attempt $i of $MAX_RETRIES)..."
