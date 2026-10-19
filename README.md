@@ -7,18 +7,20 @@ Whether you need a pristine upstream kernel or a heavily modified build featurin
 
 ## 🚀 Overview
 
-The core philosophy of this project is **Dynamic Generation over Bulk Compilation**. 
+The core philosophy of this project is **Precision Generation over Bulk Compilation**. 
 
-Unlike massive kernel distribution repositories that compile hundreds of generic permutations on a fixed schedule, this CI is designed to be a personal build engine. When you trigger a workflow, the pipeline dynamically resolves the correct Google manifest branches, fetches the absolute latest source code for your chosen root environment, and integrates custom patches and config overrides on the fly. 
+Unlike massive kernel distribution repositories that compile hundreds of generic permutations on a fixed schedule, this CI is designed to be a personal build engine. When you trigger a workflow, the pipeline precisely resolves the correct Google manifest branches, fetches your chosen root environment, and integrates custom patches and config overrides on the fly. 
 
-The result? You get one single, tailor-made kernel artifact and its exact matching manager APK, perfectly synced with the upstream ecosystem.
+To balance this immense flexibility with device safety, the project is strictly divided into two build channels:
+*   **The Stable Channel (Default & Recommended):** Builds from locked-down, verified source forks. This completely insulates your device from upstream chaos, guaranteeing a safe compile and a reliable boot for your daily driver.
+*   **The Dynamic Channel (Volatile & High Risk):** Pulls the absolute latest upstream commits for testing and development. **⚠️ Warning:** This channel is highly prone to severe build failures and device bootloops caused by experimental upstream architectural changes. Proceed with caution.
 
 ### ✨ Advantages
-* **No Waiting for Updates:** You don't have to wait for a maintainer to trigger a batch build. If Google drops a new GKI update, or KernelSU merges a new commit, you can build it yourself immediately.
-* **Bleeding Edge Option:** The `dynamic` build channel pulls the latest upstream commits for the Linux kernel and your chosen root manager every single time you run it. 
-* **Precision Output:** Instead of sifting through hundreds of zip files to find your device's specific combination, the CI builds exactly what you ask for and packages it cleanly.
+* **Rock-Solid Stability:** By defaulting to the `stable` channel, you get all the benefits of a custom CI pipeline without the risk of flashing broken upstream code.
+* **No Waiting for Updates:** If Google drops a new GKI update, you can build it yourself immediately without waiting for a maintainer.
+* **Bleeding Edge Testing:** When you want to hunt bugs or test new features, the `dynamic` channel lets you intentionally pull raw upstream commits to see what breaks.
+* **Precision Output:** Instead of sifting through hundreds of zip files, the CI builds exactly what you ask for and packages it cleanly.
 * **Guaranteed Version Matching:** The pipeline automatically fetches the exact Manager APK that matches the root environment source code used during compilation. No more signature mismatches or incompatible userspace apps.
-* **Safe Fallbacks:** If the bleeding-edge upstream commits break compilation, you can instantly toggle the CI to the `stable` channel to build from verified, safe forks.
 
 ## ⚙️ Features
 * **Multiple Root Managers:** Native integration support for `KernelSU`, `KernelSU-Next`, `SukiSU-Ultra`, `BakaSU`, and `ReSukiSU` (retained as a legacy fallback branch in case of BakaSU instability).
@@ -54,7 +56,7 @@ In your forked repository, navigate to the **Actions** tab. Click **"I understan
 
 | Parameter | Description |
 | :--- | :--- |
-| **Build Channel** | Choose `dynamic` (latest upstream commits) or `stable` (fallback to verified forks if dynamic fails). |
+| **Build Channel** | Choose `stable` (**Recommended default**, tested and verified to boot safely) or `dynamic` (Bleeding-edge upstream commits. **Warning:** Highly volatile, prone to compile errors and bootloops). |
 | **Build Name** | A custom name for your output artifact (e.g., `Pixel_10_Pro_Testing`). |
 | **Kernel Version** | The exact GKI target version you wish to build (e.g., `6.12.11`). |
 | **Root Environment** | Select your preferred root manager from the dropdown list (`KernelSU`, `KernelSU-Next`, `SukiSU-Ultra`, `BakaSU`, `ReSukiSU`, or `Stock`). |
