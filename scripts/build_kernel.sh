@@ -9,6 +9,11 @@ BASE_VER=${BASE_VER:-}
 echo "=== Initializing Execution Engine ==="
 
 cd kernel_workspace
+echo ">>> Sanitizing kernel release string to match pristine official source..."
+if [ -n "${OFFICIAL_RELEASE:-}" ] && [ -f common/scripts/setlocalversion ]; then
+    sed -i '$ s|.*|echo "'"${OFFICIAL_RELEASE}"'"|' common/scripts/setlocalversion
+    echo "    -> scripts/setlocalversion hardcoded to: ${OFFICIAL_RELEASE}"
+fi
 mkdir -p ../out out/dist
 
 echo ">>> Marking repo as clean (sanitizes all custom configuration & source modifications)..."
