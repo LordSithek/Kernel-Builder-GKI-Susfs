@@ -267,6 +267,7 @@ jobs:
           cd common
           echo "OFFICIAL_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "OFFICIAL_DATE=$(git log -1 --format=%ct)" >> $GITHUB_ENV
+          echo "OFFICIAL_RELEASE=$(scripts/setlocalversion .)" >> $GITHUB_ENV
           echo ">>> Captured Hash: $(git rev-parse --short HEAD)"
           echo ">>> Captured Date: $(git log -1 --format=%ct)"
 
@@ -401,6 +402,7 @@ jobs:
           # Injecting the REAL Google identity into the script session
           OFFICIAL_HASH=${{ env.OFFICIAL_HASH }} \
           OFFICIAL_DATE=${{ env.OFFICIAL_DATE }} \
+          OFFICIAL_RELEASE=${{ env.OFFICIAL_RELEASE }} \
           bash ./scripts/build_kernel.sh
           
       - name: Pull stock boot.img from OTA
